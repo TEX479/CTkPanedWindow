@@ -4,11 +4,13 @@ import tkinter as tk
 
 
 class CTkPanedWindow(ctk.CTkFrame):
-    def __init__(self, master: tk.Tk, orient: Literal['horizontal', 'vertical']=tk.HORIZONTAL, **kwargs: Any):
+    def __init__(self, master: Any, orient: Literal['horizontal', 'vertical']=tk.HORIZONTAL, **kwargs: Any):
         super().__init__(master, **kwargs) # type: ignore
-        
-        self.paned_window = tk.PanedWindow(self, orient=orient, bd=0, sashwidth=6)
-        self.paned_window.pack(fill=tk.BOTH, expand=True)
+        self.orientation = orient
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.paned_window = tk.PanedWindow(self, orient=orient, bd=0, sashwidth=5, sashrelief="ridge")
+        self.paned_window.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
         
         self._apply_theme()
 
@@ -23,7 +25,9 @@ class CTkPanedWindow(ctk.CTkFrame):
         
         self.paned_window.config(bg=fg_color)
 
-    def add(self, child: tk.Widget, **kwargs: Any) -> None: 
+    def add(self, child: tk.Widget, **kwargs: Any) -> None:
+        if not "stretch" in kwargs:
+            kwargs["stretch"] = "always"
         self.paned_window.add(child, **kwargs) # type: ignore
 
     def remove(self, child: tk.Widget):
@@ -33,33 +37,34 @@ class CTkPanedWindow(ctk.CTkFrame):
         return self.paned_window.sash_coord(index) # type: ignore
     
     def sash_place(self, index: int, x: int, y: int):
-        self.paned_window.sash_place(index, x, y) # type: ignore  
+        self.paned_window.sash_place(index, x, y) # type: ignore
 
 
-class App(ctk.CTk):
-    def __init__(self):
-        super().__init__() # type: ignore
-        self.geometry("300x300")
-        self.title("CustomTkinter")
-
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-
-        self.paned_window = CTkPanedWindow(
-            self, orient="horizontal", #sashwidth=10, sashrelief="ridge"
-        )
-        self.paned_window.grid(row=0, column=0, padx=0, pady=0, sticky="nsew") # type: ignore
-
-        frame1 = ctk.CTkFrame(self.paned_window)
-        frame2 = ctk.CTkFrame(self.paned_window)
-        self.paned_window.add(frame1) # type: ignore
-        self.paned_window.add(frame2) # type: ignore
-        
-        label1 = ctk.CTkLabel(frame1, text="Frame 1")
-        label1.grid(row=0, column=0, padx=10, pady=10) # type: ignore
-        label2 = ctk.CTkLabel(frame2, text="Frame 2")
-        label2.grid(row=0, column=0, padx=10, pady=10) # type: ignore
 
 if __name__ == "__main__":
+    class App(ctk.CTk):
+        def __init__(self):
+            super().__init__() # type: ignore
+            self.geometry("300x300")
+            self.title("CustomTkinter")
+
+            self.grid_columnconfigure(0, weight=1)
+            self.grid_rowconfigure(0, weight=1)
+
+            self.paned_window = CTkPanedWindow(
+                self, orient="horizontal", #sashwidth=10, sashrelief="ridge"
+            )
+            self.paned_window.grid(row=0, column=0, padx=0, pady=0, sticky="nsew") # type: ignore
+
+            frame1 = ctk.CTkFrame(self.paned_window)
+            frame2 = ctk.CTkFrame(self.paned_window)
+            self.paned_window.add(frame1, stretch="always") # type: ignore
+            self.paned_window.add(frame2, stretch="always") # type: ignore
+            
+            label1 = ctk.CTkLabel(frame1, text="Frame 1")
+            label1.grid(row=0, column=0, padx=10, pady=10) # type: ignore
+            label2 = ctk.CTkLabel(frame2, text="Frame 2")
+            label2.grid(row=0, column=0, padx=10, pady=10) # type: ignore
+
     app = App()
     app.mainloop() # type: ignore
